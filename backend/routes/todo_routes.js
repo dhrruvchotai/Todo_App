@@ -19,9 +19,9 @@ router.get('/fetch',async(req,res) => {
 //add a todo to the DB
 router.post('/add',async(req,res)=>{
     try{
-        const{title, description} = req.body;
+        const{title, description, priority} = req.body;
 
-        console.log(`Title : ${title}, Description : ${description}`);
+        console.log(`Title : ${title}, Description : ${description}, Priority : ${priority}`);
 
         if(!title){
             res.status(400).json({message : "Title is necessary!"})
@@ -30,7 +30,8 @@ router.post('/add',async(req,res)=>{
             //create method create a new object of the model and saves it automatically to DB
             const newTodo = await Todos.create({
                 title : title,
-                description : description
+                description : description,
+                priority : priority,
             });
 
             if(newTodo){
@@ -51,7 +52,7 @@ router.post('/add',async(req,res)=>{
 //edit a todo 
 router.patch('/edit/:id',async(req,res)=>{
     try{
-        const{title, description} = req.body;
+        const{title, description, priority} = req.body;
         
         if(!req.params.id || !title){
             res.status(400).json({message : "Id and title is necessary - can not update the data!"});
@@ -59,7 +60,7 @@ router.patch('/edit/:id',async(req,res)=>{
         else{
             const updatedTodo = await Todos.findOneAndUpdate(
                 {id : req.params.id},
-                {title : title, description : description},
+                {title : title, description : description, priority : priority},
                 //it returns the updated the document
                 {new : true}
             );

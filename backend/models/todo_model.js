@@ -22,6 +22,11 @@ const todoSchema = new mongoose.Schema(
             type : String,
             trim : true
         },
+        priority:{
+            type : String,
+            trim : true,
+            default : "Low",
+        },
     },
     {
         timestamps : true,
