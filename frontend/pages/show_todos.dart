@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:todo_app/frontend/api/api_service.dart';
-import 'package:todo_app/frontend/pages/add_todos.dart';
+import 'package:todo_app/frontend/api_services/api_service.dart';
 
-class ShowTodos extends StatefulWidget {
-  const ShowTodos({super.key});
+class ShowTodosScreen extends StatefulWidget {
+  const ShowTodosScreen({super.key});
 
   @override
-  State<ShowTodos> createState() => _ShowTodosState();
+  State<ShowTodosScreen> createState() => _ShowTodosScreenState();
 }
 
-class _ShowTodosState extends State<ShowTodos> {
+class _ShowTodosScreenState extends State<ShowTodosScreen> {
   APIService myAPIService = APIService();
   Future<List<Map<String, dynamic>>>? futureTodos;
 
@@ -126,16 +125,17 @@ class _ShowTodosState extends State<ShowTodos> {
                                   children: [
                                     Padding(
                                       padding: const EdgeInsets.only(left: 10),
-                                      child: Container(
-                                        height: 30,
-                                        width: 60,
-                                        decoration: BoxDecoration(
-                                          color: Colors.redAccent,
-                                          borderRadius: BorderRadius.circular(20),
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(left: 15,top: 5),
-                                          child: Text("High",style: TextStyle(color: Colors.white),),
+                                      child: IntrinsicWidth(
+                                        child: Container(
+                                          height: 30,
+                                          decoration: BoxDecoration(
+                                            color:getPriorityColor(snapshot.data![index]["priority"]),
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(left: 10,right: 10),
+                                            child: Center(child: Text(snapshot.data![index]["priority"] ?? "Low",style: TextStyle(color: Colors.white),)),
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -159,12 +159,14 @@ class _ShowTodosState extends State<ShowTodos> {
                                   padding: const EdgeInsets.only(top: 10,left: 14),
                                   child: Row(
                                     children: [
-                                      Text(
-                                        snapshot.data![index]["description"] != null
-                                          ? snapshot.data![index]["description"]
-                                          : "No Description Available!",
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(color: Colors.white.withOpacity(0.8),fontSize: 18),
+                                      Expanded(
+                                        child: Text(
+                                          snapshot.data![index]["description"] != null
+                                            ? snapshot.data![index]["description"]
+                                            : "No Description Available!",
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(color: Colors.white.withOpacity(0.8),fontSize: 18),
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -182,9 +184,18 @@ class _ShowTodosState extends State<ShowTodos> {
           ],
         ),
       ),
-      // floatingActionButton: FloatingActionButton(onPressed: (){
-      //     Navigator.push(context,MaterialPageRoute(builder: (context) => AddTodos()));
-      // },child:Icon(Icons.add,color: Colors.white,) ,backgroundColor: Colors.white.withOpacity(0.3),),
     );
+  }
+
+  Color getPriorityColor(String? priority) {
+    switch (priority?.toLowerCase()) {
+      case 'high':
+        return Colors.redAccent.withOpacity(0.5);
+      case 'medium':
+        return Colors.yellowAccent.withOpacity(0.5);
+      case 'low':
+      default:
+        return Colors.greenAccent.withOpacity(0.5);
+    }
   }
 }

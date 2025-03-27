@@ -3,6 +3,7 @@ import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_not
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:todo_app/frontend/pages/add_todos.dart';
+import 'package:todo_app/frontend/pages/chat_wth_ai.dart';
 import 'package:todo_app/frontend/pages/show_todos.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -41,8 +42,9 @@ class _MyHomePageState extends State<MyHomePage> {
     /// widget list
     final List<Widget> bottomBarPages = [
       //List all the pages for bottom bar
-      ShowTodos(),
-      const AddTodos()
+      ShowTodosScreen(),
+      AddTodosScreen(),
+      ChatWithAIScreen(),
     ];
     return Scaffold(
       body: PageView(
@@ -95,12 +97,12 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           BottomBarItem(
             inActiveItem: Icon(
-              Icons.settings_outlined,
+              CupertinoIcons.chat_bubble_text,
               color: Colors.white.withOpacity(0.7),
               size: 27,
             ),
             activeItem: Icon(
-              Icons.settings,
+              CupertinoIcons.chat_bubble_text_fill,
               color: Colors.white,
               size: 29,
             ),

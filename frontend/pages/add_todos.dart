@@ -1,21 +1,20 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:todo_app/frontend/pages/home_page.dart';
-import 'package:todo_app/frontend/pages/show_todos.dart';
+import '../api_services/api_service.dart';
 
-import '../api/api_service.dart';
-
-class AddTodos extends StatefulWidget {
-  const AddTodos({super.key});
+class AddTodosScreen extends StatefulWidget {
+  const AddTodosScreen({super.key});
 
   @override
-  State<AddTodos> createState() => _AddTodosState();
+  State<AddTodosScreen> createState() => _AddTodosScreenState();
 }
 
-class _AddTodosState extends State<AddTodos> {
+class _AddTodosScreenState extends State<AddTodosScreen> {
   APIService myAPIService = APIService();
   TextEditingController Title = TextEditingController();
   TextEditingController Description = TextEditingController();
+  String? selectedPriority = "Low";
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,6 +34,7 @@ class _AddTodosState extends State<AddTodos> {
       ),
       body: Column(
         children: [
+          //Name For Todo
           Padding (
             padding: const EdgeInsets.only(left: 16,right: 16,top: 10),
             child: TextFormField(
@@ -55,6 +55,33 @@ class _AddTodosState extends State<AddTodos> {
                   borderSide: BorderSide(color: Colors.white)
                 )
               ),
+            ),
+          ),
+          //Priority For Todo
+          Padding(
+            padding: const EdgeInsets.only(left: 16,right: 16,top: 10),
+            child: DropdownButtonFormField<String>(
+              value: selectedPriority,
+              decoration: InputDecoration(
+                labelText: "Priority",
+                labelStyle: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 24),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+              ),
+              dropdownColor: Colors.black, // Dropdown background color
+              style: TextStyle(color: Colors.white, fontSize: 20),
+              items: ["Low", "Medium", "High"].map((String priority) {
+                return DropdownMenuItem<String>(
+                  value: priority,
+                  child: Text(priority, style: TextStyle(color: Colors.white)),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedPriority = newValue!;
+                });
+              },
             ),
           ),
           Padding(
@@ -86,9 +113,20 @@ class _AddTodosState extends State<AddTodos> {
                 Map<String,dynamic> TodoData = {};
                 TodoData["title"] = Title.text;
                 TodoData["description"] = Description.text;
+                TodoData["priority"] = selectedPriority;
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => Center(child: CircularProgressIndicator(color: Colors.white.withOpacity(0.4),)),
+                );
                 await myAPIService.addTodo(TodoData);
                 await myAPIService.fetchTodos();
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(),));
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (context) => MyHomePage(initialIndex: 0),
+                  ),
+                      (route) => false, // for removing all previous routes
+                );
               },
               child: Text("Create Task",style: TextStyle(color: Colors.black,fontSize: 18),),
               style: ElevatedButton.styleFrom(minimumSize: Size(350, 50),shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(11))),),
