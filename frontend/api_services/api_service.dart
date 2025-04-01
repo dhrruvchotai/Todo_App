@@ -4,12 +4,29 @@ import 'package:http/http.dart' as http;
 
 class APIService{
   //API 
-  String? apiKey = dotenv.env['API'];
+  String? apiKeyTodos = dotenv.env['Todos_API'];
+  String? apiKeyAuth = dotenv.env['Auth_API'];
+
+  //sign up user
+  Future<void> createAccount(userName,email,password,confirmPassword) async{
+    try{
+      final res = await http.post(Uri.parse(apiKeyAuth! + "/signup"));
+      if(res.statusCode == 201){
+        print("User created successfully : ${res.body}");
+      }
+      else{
+        print("Can not create user account!");
+      }
+    }
+    catch(e){
+      print("Error while creating user account : $e");
+    }
+  }
 
   //fetch todos from database using api
   Future<List<Map<String,dynamic>>> fetchTodos() async{
     try{
-      final res = await http.get(Uri.parse(apiKey! + "/fetch"));
+      final res = await http.get(Uri.parse(apiKeyTodos! + "/fetch"));
       if(res.statusCode == 200){
         print(List<Map<String,dynamic>>.from(jsonDecode(res.body)));
         return List<Map<String,dynamic>>.from(jsonDecode(res.body));
@@ -27,7 +44,7 @@ class APIService{
       print("Add Todo Method Called!");
       print("This is TodoData $TodoData");
       final res = await http.post(
-          Uri.parse(apiKey! + "/add"),
+          Uri.parse(apiKeyTodos! + "/add"),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
           },

@@ -4,9 +4,15 @@ import Todos from "../models/todo_model.js";
 const router = express.Router();
 
 //fetch all the todos from DB
-router.get('/fetch',async(req,res) => {
+router.get('/fetch/:userId',async(req,res) => {
     try{
-        const todos = await Todos.find();
+        const {userId} = req.params;
+
+        if(!userId){
+            return res.status(400).json("User Id is required!");
+        }
+
+        const todos = await Todos.find({userId});
         console.log(`All Todos : ${todos}`);
         res.status(200).json(todos);
     }
@@ -19,16 +25,17 @@ router.get('/fetch',async(req,res) => {
 //add a todo to the DB
 router.post('/add',async(req,res)=>{
     try{
-        const{title, description, priority} = req.body;
+        const{userId, title, description, priority} = req.body;
 
-        console.log(`Title : ${title}, Description : ${description}, Priority : ${priority}`);
+        console.log(`User ID : ${userId}, Title : ${title}, Description : ${description}, Priority : ${priority}`);
 
-        if(!title){
-            res.status(400).json({message : "Title is necessary!"})
+        if(!userId || !title){
+            res.status(400).json({message : "User ID and Title is necessary!"})
         }
         else{
             //create method create a new object of the model and saves it automatically to DB
             const newTodo = await Todos.create({
+                userId : userId,
                 title : title,
                 description : description,
                 priority : priority,
@@ -52,14 +59,14 @@ router.post('/add',async(req,res)=>{
 //edit a todo 
 router.patch('/edit/:id',async(req,res)=>{
     try{
-        const{title, description, priority} = req.body;
+        const{userId, title, description, priority} = req.body;
         
-        if(!req.params.id || !title){
-            res.status(400).json({message : "Id and title is necessary - can not update the data!"});
+        if(!req.params.id || !userId || !title){
+            res.status(400).json({message : "User ID, Todo ID and title is necessary - can not update the data!"});
         }
         else{
             const updatedTodo = await Todos.findOneAndUpdate(
-                {id : req.params.id},
+                {id : req.params.id,userId : userId},
                 {title : title, description : description, priority : priority},
                 //it returns the updated the document
                 {new : true}
@@ -83,7 +90,13 @@ router.patch('/edit/:id',async(req,res)=>{
 //delete a todo
 router.delete('/delete/:id',async(req,res) => {
     try{
-        const deletedTodo = await Todos.findOneAndDelete({id : req.params.id});
+        const {userId} = req.body;
+
+        if(!req.params.id || !userId){
+            return res.status(400).json({message : "User ID and Todo ID are required!"});
+        }
+
+        const deletedTodo = await Todos.findOneAndDelete({id : req.params.id,userId : userId});
 
         if(deletedTodo){
             res.status(200).json({message : "Todo deleted successfully!"});

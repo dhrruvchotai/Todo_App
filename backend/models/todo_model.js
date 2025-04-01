@@ -11,7 +11,12 @@ const todoSchema = new mongoose.Schema(
     {
         id:{
             type : Number,
-            unique : true
+            unique : true,
+        },
+        userId : {
+            type : mongoose.Schema.Types.ObjectId,
+            ref : "Users",
+            required : true,
         },
         title:{
             type : String,
