@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:todo_app/frontend/api_services/api_service.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:todo_app/frontend/api_services/todo_api_service.dart';
 
 class ShowTodosScreen extends StatefulWidget {
   const ShowTodosScreen({super.key});
@@ -9,22 +11,29 @@ class ShowTodosScreen extends StatefulWidget {
 }
 
 class _ShowTodosScreenState extends State<ShowTodosScreen> {
-  APIService myAPIService = APIService();
+  Todo_APIService myAPIService = Todo_APIService();
   Future<List<Map<String, dynamic>>>? futureTodos;
+  String? userName,userId;
 
   @override
   void initState() {
     super.initState();
-    futureTodos = myAPIService.fetchTodos();
+    initializeData();
   }
 
-//temporary method to check api is working or not 
-  Future<void> fetchTodos() async{
-    List<Map<String,dynamic>> dataList = await myAPIService.fetchTodos();
+  Future<void> initializeData() async {
+    await getUserData();
     setState(() {
-      
+      futureTodos = myAPIService.fetchTodos(userId!);
     });
-    print("Data is : ${dataList}");
+  }
+
+  Future<void> getUserData() async {
+    SharedPreferences sharedpref = await SharedPreferences.getInstance();
+    setState(() {
+      userName = sharedpref.getString("userName") ?? "Guest";
+      userId = sharedpref.getString("userId") ?? "Guest_25";
+    });
   }
 
   @override
@@ -51,7 +60,7 @@ class _ShowTodosScreenState extends State<ShowTodosScreen> {
                   ),
                 ),
                 Text(
-                  "Dhruv 👋",
+                  "$userName 👋",
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.8),
                     fontSize: 20,
@@ -139,7 +148,10 @@ class _ShowTodosScreenState extends State<ShowTodosScreen> {
                                         ),
                                       ),
                                     ),
-                                    Text("82%",style: TextStyle(color: Colors.white,fontSize: 17),)
+                                    Text(
+                                      overflow: TextOverflow.ellipsis,
+                                      DateFormat('EEE, d MMM').format(DateTime.parse(snapshot.data![index]["createdAt"])) ?? DateFormat('dd-MM-yyyy').format(DateTime.now()),
+                                      style: TextStyle(color: Colors.white,fontSize: 17),)
                                   ],
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 ),
@@ -147,10 +159,12 @@ class _ShowTodosScreenState extends State<ShowTodosScreen> {
                                   padding: const EdgeInsets.only(top: 10,left: 10),
                                   child: Row(
                                     children: [
-                                      Text(
-                                          snapshot.data![index]["title"] ?? "No Title",
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(color: Colors.white,fontSize: 20),
+                                      Expanded(
+                                        child: Text(
+                                            snapshot.data![index]["title"] ?? "No Title",
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(color: Colors.white,fontSize: 20),
+                                        ),
                                       ),
                                     ],
                                   ),

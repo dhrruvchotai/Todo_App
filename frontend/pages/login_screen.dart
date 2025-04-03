@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:todo_app/frontend/api_services/auth_api_service.dart';
+import 'package:todo_app/frontend/api_services/todo_api_service.dart';
+import 'package:todo_app/frontend/pages/home_page.dart';
 import 'package:todo_app/frontend/pages/signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -9,11 +12,10 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  Auth_APIService TodoAPIService = Auth_APIService();
   final _formKey = GlobalKey<FormState>();
-  TextEditingController userName = TextEditingController();
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
-  TextEditingController confirmPassword = TextEditingController();
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -142,15 +144,29 @@ class _LoginScreenState extends State<LoginScreen> {
               Padding(
                 padding: const EdgeInsets.only(left: 10, right: 10, top: 40),
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async{
                     if (_formKey.currentState!.validate()) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content:
                           Text('Logging into you account..'),
-                          backgroundColor: Colors.white.withOpacity(0.3),
+                          backgroundColor: Colors.black.withOpacity(0.9),
                         ),
                       );
+                      Map<String,dynamic> userData = {};
+                      userData['email'] = email.text;
+                      userData['password'] = password.text;
+                      bool isLoginSuccessful = await TodoAPIService.loginIntoAccount(userData);
+                      if(isLoginSuccessful){
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder:(context) => HomePage(),));
+                      }
+                      else{
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Can not login into your account!"),
+                          backgroundColor: Colors.black.withOpacity(0.9),
+                          ),
+                        );
+                      }
                     }
                   },
                   child: const Text(

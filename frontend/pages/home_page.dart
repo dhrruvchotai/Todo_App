@@ -6,15 +6,15 @@ import 'package:todo_app/frontend/pages/add_todos.dart';
 import 'package:todo_app/frontend/pages/chat_wth_ai.dart';
 import 'package:todo_app/frontend/pages/show_todos.dart';
 
-class MyHomePage extends StatefulWidget {
+class HomePage extends StatefulWidget {
   final int initialIndex;
-  const MyHomePage({Key? key,this.initialIndex = 0}) : super(key: key);
+  const HomePage({Key? key,this.initialIndex = 0}) : super(key: key);
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _HomePageState extends State<HomePage> {
 
   late final PageController _pageController;
   late final NotchBottomBarController _controller;

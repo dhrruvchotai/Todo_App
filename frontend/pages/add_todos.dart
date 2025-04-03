@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_app/frontend/pages/home_page.dart';
-import '../api_services/api_service.dart';
+import '../api_services/todo_api_service.dart';
 
 class AddTodosScreen extends StatefulWidget {
   const AddTodosScreen({super.key});
@@ -11,10 +12,35 @@ class AddTodosScreen extends StatefulWidget {
 }
 
 class _AddTodosScreenState extends State<AddTodosScreen> {
-  APIService myAPIService = APIService();
+
+  Todo_APIService myAPIService = Todo_APIService();
   TextEditingController Title = TextEditingController();
   TextEditingController Description = TextEditingController();
   String? selectedPriority = "Low";
+  String? userId,userName;
+  Future<List<Map<String, dynamic>>>? futureTodos;
+
+  @override
+  void initState() {
+    super.initState();
+    initializeData();
+  }
+
+  Future<void> initializeData() async {
+    await getUserData();
+    setState(() {
+      futureTodos = myAPIService.fetchTodos(userId!);
+    });
+  }
+
+  Future<void> getUserData() async {
+    SharedPreferences sharedpref = await SharedPreferences.getInstance();
+    setState(() {
+      userName = sharedpref.getString("userName") ?? "Guest";
+      userId = sharedpref.getString("userId") ?? "Guest_25";
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,12 +51,6 @@ class _AddTodosScreenState extends State<AddTodosScreen> {
           child: Text("Create New Task",style: TextStyle(color: Colors.white),),
         ),
         backgroundColor: Colors.black,
-        // leading: Padding(
-        //   padding: const EdgeInsets.only(top: 10),
-        //   child: IconButton(onPressed: (){
-        //     Navigator.of(context).pop();
-        //   }, icon: Icon(CupertinoIcons.multiply,color: Colors.white,))
-        // ),
       ),
       body: Column(
         children: [
@@ -111,6 +131,7 @@ class _AddTodosScreenState extends State<AddTodosScreen> {
             child: ElevatedButton(
               onPressed: () async{
                 Map<String,dynamic> TodoData = {};
+                TodoData["userId"] = userId;
                 TodoData["title"] = Title.text;
                 TodoData["description"] = Description.text;
                 TodoData["priority"] = selectedPriority;
@@ -119,11 +140,11 @@ class _AddTodosScreenState extends State<AddTodosScreen> {
                   barrierDismissible: false,
                   builder: (context) => Center(child: CircularProgressIndicator(color: Colors.white.withOpacity(0.4),)),
                 );
-                await myAPIService.addTodo(TodoData);
-                await myAPIService.fetchTodos();
+                await myAPIService.addTodo(TodoData,userId!);
+                await myAPIService.fetchTodos(userId!);
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(
-                    builder: (context) => MyHomePage(initialIndex: 0),
+                    builder: (context) => HomePage(initialIndex: 0),
                   ),
                       (route) => false, // for removing all previous routes
                 );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:todo_app/frontend/api_services/api_service.dart';
+import 'package:todo_app/frontend/api_services/auth_api_service.dart';
+import 'package:todo_app/frontend/api_services/todo_api_service.dart';
 import 'package:todo_app/frontend/pages/login_screen.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -10,7 +11,7 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  APIService myAPIService = APIService();
+  Auth_APIService AuthAPIService = Auth_APIService();
   final _formKey = GlobalKey<FormState>();
   TextEditingController userName = TextEditingController();
   TextEditingController email = TextEditingController();
@@ -231,10 +232,27 @@ class _SignupScreenState extends State<SignupScreen> {
                         SnackBar(
                           content:
                               Text('Creating account for ${userName.text}'),
-                          backgroundColor: Colors.white.withOpacity(0.3),
+                          backgroundColor: Colors.black.withOpacity(0.9),
                         ),
                       );
-                      await myAPIService.createAccount(userName.text, email.text, password.text, confirmPassword.text);
+                      Map<String,dynamic> userData = {};
+                      userData['userName'] = userName.text;
+                      userData['email'] = email.text;
+                      userData['password'] = password.text;
+                      userData['confirmPassword'] = confirmPassword.text;
+                      bool isSignupSuccessful = await AuthAPIService.createAccount(userData);
+                      if(isSignupSuccessful){
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginScreen(),));
+                      }
+                      else{
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content:
+                            Text('Error in creating your account!'),
+                            backgroundColor: Colors.black.withOpacity(0.9),
+                          ),
+                        );
+                      }
                     }
                   },
                   child: const Text(
