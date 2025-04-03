@@ -48,111 +48,116 @@ class _AddTodosScreenState extends State<AddTodosScreen> {
       appBar: AppBar(
         title: Padding(
           padding: const EdgeInsets.only(top: 10),
-          child: Text("Create New Task",style: TextStyle(color: Colors.white),),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text("Create New Task",style: TextStyle(color: Colors.white,fontSize: 26),),
+          ),
         ),
         backgroundColor: Colors.black,
       ),
-      body: Column(
-        children: [
-          //Name For Todo
-          Padding (
-            padding: const EdgeInsets.only(left: 16,right: 16,top: 10),
-            child: TextFormField(
-              controller: Title,
-              textCapitalization: TextCapitalization.words,
-              keyboardType: TextInputType.text,
-              autocorrect: true,
-              cursorColor: Colors.white,
-              style: TextStyle(color: Colors.white,fontSize: 22),
-              decoration: InputDecoration(
-                labelText: "Task Name",
-                floatingLabelStyle: TextStyle(
-                  color: Colors.white.withOpacity(0.3),
-                  fontSize: 24,
-                ),
-                labelStyle: TextStyle(color: Colors.white.withOpacity(0.3),fontSize: 20),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white)
-                )
-              ),
-            ),
-          ),
-          //Priority For Todo
-          Padding(
-            padding: const EdgeInsets.only(left: 16,right: 16,top: 10),
-            child: DropdownButtonFormField<String>(
-              value: selectedPriority,
-              decoration: InputDecoration(
-                labelText: "Priority",
-                labelStyle: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 24),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
-                ),
-              ),
-              dropdownColor: Colors.black, // Dropdown background color
-              style: TextStyle(color: Colors.white, fontSize: 20),
-              items: ["Low", "Medium", "High"].map((String priority) {
-                return DropdownMenuItem<String>(
-                  value: priority,
-                  child: Text(priority, style: TextStyle(color: Colors.white)),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  selectedPriority = newValue!;
-                });
-              },
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 16,right: 16,top: 10),
-            child: TextFormField(
-              controller: Description,
-              textCapitalization: TextCapitalization.sentences,
-              keyboardType: TextInputType.text,
-              autocorrect: true,
-              cursorColor: Colors.white,
-              style: TextStyle(color: Colors.white,fontSize: 22),
-              decoration: InputDecoration(
-                  labelText: "Description",
+      body: SafeArea(
+        child: Column(
+          children: [
+            //Name For Todo
+            Padding (
+              padding: const EdgeInsets.only(left: 16,right: 16,top: 10),
+              child: TextFormField(
+                controller: Title,
+                textCapitalization: TextCapitalization.words,
+                keyboardType: TextInputType.text,
+                autocorrect: true,
+                cursorColor: Colors.white,
+                style: TextStyle(color: Colors.white,fontSize: 22),
+                decoration: InputDecoration(
+                  labelText: "Task Name",
                   floatingLabelStyle: TextStyle(
                     color: Colors.white.withOpacity(0.3),
                     fontSize: 24,
                   ),
                   labelStyle: TextStyle(color: Colors.white.withOpacity(0.3),fontSize: 20),
                   focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white)
+                    borderSide: BorderSide(color: Colors.white)
                   )
+                ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 10,right: 10,top: 20),
-            child: ElevatedButton(
-              onPressed: () async{
-                Map<String,dynamic> TodoData = {};
-                TodoData["userId"] = userId;
-                TodoData["title"] = Title.text;
-                TodoData["description"] = Description.text;
-                TodoData["priority"] = selectedPriority;
-                showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (context) => Center(child: CircularProgressIndicator(color: Colors.white.withOpacity(0.4),)),
-                );
-                await myAPIService.addTodo(TodoData,userId!);
-                await myAPIService.fetchTodos(userId!);
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(
-                    builder: (context) => HomePage(initialIndex: 0),
+            //Priority For Todo
+            Padding(
+              padding: const EdgeInsets.only(left: 16,right: 16,top: 10),
+              child: DropdownButtonFormField<String>(
+                value: selectedPriority,
+                decoration: InputDecoration(
+                  labelText: "Priority",
+                  labelStyle: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 24),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
                   ),
-                      (route) => false, // for removing all previous routes
-                );
-              },
-              child: Text("Create Task",style: TextStyle(color: Colors.black,fontSize: 18),),
-              style: ElevatedButton.styleFrom(minimumSize: Size(350, 50),shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(11))),),
-          )
-        ],
+                ),
+                dropdownColor: Colors.black, // Dropdown background color
+                style: TextStyle(color: Colors.white, fontSize: 20),
+                items: ["Low", "Medium", "High"].map((String priority) {
+                  return DropdownMenuItem<String>(
+                    value: priority,
+                    child: Text(priority, style: TextStyle(color: Colors.white)),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedPriority = newValue!;
+                  });
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 16,right: 16,top: 10),
+              child: TextFormField(
+                controller: Description,
+                textCapitalization: TextCapitalization.sentences,
+                keyboardType: TextInputType.text,
+                autocorrect: true,
+                cursorColor: Colors.white,
+                style: TextStyle(color: Colors.white,fontSize: 22),
+                decoration: InputDecoration(
+                    labelText: "Description",
+                    floatingLabelStyle: TextStyle(
+                      color: Colors.white.withOpacity(0.3),
+                      fontSize: 24,
+                    ),
+                    labelStyle: TextStyle(color: Colors.white.withOpacity(0.3),fontSize: 20),
+                    focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white)
+                    )
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 10,right: 10,top: 20),
+              child: ElevatedButton(
+                onPressed: () async{
+                  Map<String,dynamic> TodoData = {};
+                  TodoData["userId"] = userId;
+                  TodoData["title"] = Title.text;
+                  TodoData["description"] = Description.text;
+                  TodoData["priority"] = selectedPriority;
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (context) => Center(child: CircularProgressIndicator(color: Colors.white.withOpacity(0.4),)),
+                  );
+                  await myAPIService.addTodo(TodoData,userId!);
+                  await myAPIService.fetchTodos(userId!);
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => HomePage(initialIndex: 0),
+                    ),
+                        (route) => false, // for removing all previous routes
+                  );
+                },
+                child: Text("Create Task",style: TextStyle(color: Colors.black,fontSize: 18),),
+                style: ElevatedButton.styleFrom(minimumSize: Size(350, 50),shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(11))),),
+            )
+          ],
+        ),
       ),
     );
   }

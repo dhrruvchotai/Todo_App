@@ -47,4 +47,31 @@ class Todo_APIService{
       print("Error occurred in adding todo to the database : $e");
     }
   }
+
+  //delete todos
+  Future<void> deleteTodo(int todoId, Map<String,dynamic> userData) async{
+    try{
+        print("Todo Id : $todoId and User Data : $userData");
+        final res = await http.delete(
+          Uri.parse(apiKeyTodos! + "/delete/$todoId"),
+          headers: <String,String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: jsonEncode(userData)
+        );
+
+        if(res.statusCode == 200){
+          print("Todo deleted successfully!");
+          return;
+        }
+        else{
+          print("Can not delete Todo!");
+        }
+    }
+    catch(e){
+      print("Error in deleting Todo : $e");
+    }
+
+  }
+
 }

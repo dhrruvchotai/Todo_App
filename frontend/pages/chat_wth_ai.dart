@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_app/frontend/ai_services/google_generativeai_service.dart';
 
 class ChatWithAIScreen extends StatefulWidget {
@@ -10,17 +11,33 @@ class ChatWithAIScreen extends StatefulWidget {
 }
 
 class _ChatWithAIScreenState extends State<ChatWithAIScreen> {
-  OpenAIService AIServices = OpenAIService();
+  GoogleAIService AIServices = GoogleAIService();
   TextEditingController Prompt = TextEditingController();
+  String? userName,userId;
   String response = "";
   bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    getUserData();
+  }
+
+  Future<void> getUserData() async {
+    SharedPreferences sharedpref = await SharedPreferences.getInstance();
+    setState(() {
+      userName = sharedpref.getString("userName") ?? "Guest";
+      userId = sharedpref.getString("userId") ?? "Guest_25";
+      print("User Id $userId and User Name $userName from chat with AI.");
+    });
+  }
 
   Future<void> getAIResponse() async {
     setState(() {
       isLoading = true;
     });
 
-    String aiReply = await AIServices.getResponseForGivenPrompt(Prompt.text);
+    String aiReply = await AIServices.getResponseForGivenPrompt(Prompt.text,userId!);
 
     setState(() {
       response = aiReply;

@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,9 +13,10 @@ class ShowTodosScreen extends StatefulWidget {
 }
 
 class _ShowTodosScreenState extends State<ShowTodosScreen> {
-  Todo_APIService myAPIService = Todo_APIService();
+  Todo_APIService TodoAPIService = Todo_APIService();
   Future<List<Map<String, dynamic>>>? futureTodos;
   String? userName,userId;
+  Set<int> expandedItems = {};
 
   @override
   void initState() {
@@ -24,7 +27,7 @@ class _ShowTodosScreenState extends State<ShowTodosScreen> {
   Future<void> initializeData() async {
     await getUserData();
     setState(() {
-      futureTodos = myAPIService.fetchTodos(userId!);
+      futureTodos = TodoAPIService.fetchTodos(userId!);
     });
   }
 
@@ -120,74 +123,98 @@ class _ShowTodosScreenState extends State<ShowTodosScreen> {
                     itemBuilder: (context, index) {
                       return Padding(
                         padding: const EdgeInsets.all(15.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color:Colors.white.withOpacity(0.3),
-                          ),
-                          height: 130,
-                          child: Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 10),
-                                      child: IntrinsicWidth(
-                                        child: Container(
-                                          height: 30,
-                                          decoration: BoxDecoration(
-                                            color:getPriorityColor(snapshot.data![index]["priority"]),
-                                            borderRadius: BorderRadius.circular(20),
-                                          ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(left: 10,right: 10),
-                                            child: Center(child: Text(snapshot.data![index]["priority"] ?? "Low",style: TextStyle(color: Colors.white),)),
+                        child: InkWell(
+                          child: Container(
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                color:Colors.white.withOpacity(0.3),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 10),
+                                        child: IntrinsicWidth(
+                                          child: Container(
+                                            height: 30,
+                                            decoration: BoxDecoration(
+                                              color:getPriorityColor(snapshot.data![index]["priority"]),
+                                              borderRadius: BorderRadius.circular(20),
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(left: 10,right: 10),
+                                              child: Center(child: Text(snapshot.data![index]["priority"] ?? "Low",style: TextStyle(color: Colors.white),)),
+                                            ),
                                           ),
                                         ),
                                       ),
+                                      Text(
+                                        overflow: TextOverflow.ellipsis,
+                                        DateFormat('EEE, d MMM').format(DateTime.parse(snapshot.data![index]["createdAt"])) ?? DateFormat('dd-MM-yyyy').format(DateTime.now()),
+                                        style: TextStyle(color: Colors.white,fontSize: 17),)
+                                    ],
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 10,left: 10),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                              snapshot.data![index]["title"] ?? "No Title",
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(color: Colors.white,fontSize: 20),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    Text(
-                                      overflow: TextOverflow.ellipsis,
-                                      DateFormat('EEE, d MMM').format(DateTime.parse(snapshot.data![index]["createdAt"])) ?? DateFormat('dd-MM-yyyy').format(DateTime.now()),
-                                      style: TextStyle(color: Colors.white,fontSize: 17),)
-                                  ],
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 10,left: 10),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                            snapshot.data![index]["title"] ?? "No Title",
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 10,left: 14),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            snapshot.data![index]["description"] != null
+                                              ? snapshot.data![index]["description"]
+                                              : "No Description Available!",
                                             overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(color: Colors.white,fontSize: 20),
+                                            style: TextStyle(color: Colors.white.withOpacity(0.8),fontSize: 18),
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 10,left: 14),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          snapshot.data![index]["description"] != null
-                                            ? snapshot.data![index]["description"]
-                                            : "No Description Available!",
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(color: Colors.white.withOpacity(0.8),fontSize: 18),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 10,left: 14),
+                                    child: Row(
+                                      children: [
+                                        AnimatedCrossFade(
+                                            firstChild: SizedBox(height: 0),
+                                            secondChild: showMoreDetails(snapshot.data![index]["id"],userId!),
+                                            crossFadeState: expandedItems.contains(index) ? CrossFadeState.showSecond:CrossFadeState.showFirst,
+                                            duration: Duration(milliseconds: 300)
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              ],
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              ),
                             ),
                           ),
+                          onTap: (){
+                            setState(() {
+                              if(expandedItems.contains(index)){
+                                expandedItems.remove(index);
+                              }
+                              else{
+                                expandedItems.add(index);
+                              }
+                            });
+                          },
                         ),
                       );
                     },
@@ -212,4 +239,65 @@ class _ShowTodosScreenState extends State<ShowTodosScreen> {
         return Colors.greenAccent.withOpacity(0.5);
     }
   }
+
+  Widget showMoreDetails(int todoId,String userId) {
+  return Container(
+    child: Row(
+      children: [
+        GestureDetector(
+          onTap: (){},
+          child: Container(
+            height: 50,
+            width: 150,
+            decoration: BoxDecoration(
+              color: Colors.cyan.withOpacity(0.3),
+              shape: BoxShape.rectangle,
+              borderRadius: BorderRadius.circular(10)
+            ),
+            child:Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("Edit",style:TextStyle(color: Colors.white,fontSize: 17),),
+                SizedBox(width: 10,),
+                Icon(Icons.edit_note,color: Colors.white,size: 27,)
+              ],
+            ),
+          ),
+        ),
+        SizedBox(width: 8,),
+        GestureDetector(
+          onTap: () async{
+            Map<String,dynamic> userData = {};
+            userData["userId"] = userId;
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => Center(child: CircularProgressIndicator(color: Colors.white.withOpacity(0.4),)),
+            );
+            await Todo_APIService().deleteTodo(todoId, userData);
+            Navigator.of(context).pop();
+            Future.delayed(Durations.extralong4);
+            initializeData();
+          },
+          child: Container(
+            height: 50,
+            width: 150,
+            decoration: BoxDecoration(
+              color: Colors.redAccent.withOpacity(0.4),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child:Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("Delete",style: TextStyle(color: Colors.white,fontSize: 16),),
+                SizedBox(width: 10,),
+                Icon(Icons.delete,color:Colors.white,size: 27,)
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
 }
