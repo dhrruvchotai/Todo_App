@@ -48,8 +48,25 @@ class Todo_APIService{
     }
   }
 
+  //update the todo
+  Future<void> updateTodo(String todoId,Map<String,dynamic> todoToEdit) async{
+    try{
+      print("Todo Id : $todoId and the User Data : $todoToEdit");
+      final res = await http.patch(
+        Uri.parse(apiKeyTodos! + "/edit/$todoId"),
+        headers: <String,String>{
+          'Content-Type' : 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(todoToEdit),
+      );
+    }
+    catch(e){
+     print("Error in updating Todo : $e");
+    }
+  }
+
   //delete todos
-  Future<void> deleteTodo(int todoId, Map<String,dynamic> userData) async{
+  Future<void> deleteTodo(String todoId, Map<String,dynamic> userData) async{
     try{
         print("Todo Id : $todoId and User Data : $userData");
         final res = await http.delete(

@@ -1,9 +1,11 @@
-import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:todo_app/frontend/api_services/todo_api_service.dart';
+import 'package:todo_app/frontend/pages/add_update_todos.dart';
+import 'package:todo_app/frontend/pages/home_page.dart';
 
 class ShowTodosScreen extends StatefulWidget {
   const ShowTodosScreen({super.key});
@@ -103,9 +105,90 @@ class _ShowTodosScreenState extends State<ShowTodosScreen> {
               child: FutureBuilder(
                 future: futureTodos,
                 builder: (context, snapshot) {
+                  //show skeletonizer here when all todos are in the loading state
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator(color: Colors.white.withOpacity(0.5),));
-                  } else if (snapshot.hasError) {
+                    // return Center(child: CircularProgressIndicator(color: Colors.white.withOpacity(0.5),));
+                    return Skeletonizer(effect: ShimmerEffect(),enabled: true,
+                        child: ListView.builder(
+                          itemCount: 4,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.all(15.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  color:Colors.white.withOpacity(0.3),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(10.0),
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.only(left: 10),
+                                            child: IntrinsicWidth(
+                                              child: Container(
+                                                height: 30,
+                                                decoration: BoxDecoration(
+                                                  // color:getPriorityColor(snapshot.data![index]["priority"]),
+                                                  borderRadius: BorderRadius.circular(20),
+                                                ),
+                                                child: Padding(
+                                                  padding: const EdgeInsets.only(left: 10,right: 10),
+                                                  child: Center(child: Text("Low",style: TextStyle(color: Colors.white),)),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          Text(
+                                            overflow: TextOverflow.ellipsis,
+                                             DateFormat('dd-MM-yyyy').format(DateTime.now()), style: TextStyle(color: Colors.white,fontSize: 17),)
+                                        ],
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 10,left: 10),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                "No Title",
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(color: Colors.white,fontSize: 20),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 10,left: 14),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                "No Description Available!",
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(color: Colors.white.withOpacity(0.8),fontSize: 18),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 10,left: 14),
+                                        child: Row(
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ));
+                  }
+                  else if (snapshot.hasError) {
                     return Center(child: Text("Error: ${snapshot.error}"));
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return Center(
@@ -117,7 +200,6 @@ class _ShowTodosScreenState extends State<ShowTodosScreen> {
                       ),
                     );
                   }
-
                   return ListView.builder(
                     itemCount: snapshot.data!.length,
                     itemBuilder: (context, index) {
@@ -135,21 +217,49 @@ class _ShowTodosScreenState extends State<ShowTodosScreen> {
                                 children: [
                                   Row(
                                     children: [
-                                      Padding(
-                                        padding: const EdgeInsets.only(left: 10),
-                                        child: IntrinsicWidth(
-                                          child: Container(
-                                            height: 30,
-                                            decoration: BoxDecoration(
-                                              color:getPriorityColor(snapshot.data![index]["priority"]),
-                                              borderRadius: BorderRadius.circular(20),
-                                            ),
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(left: 10,right: 10),
-                                              child: Center(child: Text(snapshot.data![index]["priority"] ?? "Low",style: TextStyle(color: Colors.white),)),
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.only(left: 7),
+                                            child: IntrinsicWidth(
+                                              child: Container(
+                                                height: 30,
+                                                decoration: BoxDecoration(
+                                                  color:getPriorityColor(snapshot.data![index]["priority"]),
+                                                  borderRadius: BorderRadius.circular(20),
+                                                ),
+                                                child: Padding(
+                                                  padding: const EdgeInsets.only(left: 10,right: 10),
+                                                  child: Center(child: Text(snapshot.data![index]["priority"] ?? "Low",style: TextStyle(color: Colors.white),)),
+                                                ),
+                                              ),
                                             ),
                                           ),
-                                        ),
+                                          Transform.scale(
+                                            scale: 1.4,
+                                            child: Checkbox(
+                                              value:snapshot.data![index]["completed"] ?? false,
+                                              onChanged: (bool? value) async {
+                                                if (value == true) {
+                                                  Map<String, dynamic> userData = {};
+                                                  userData["userId"] = userId;
+                                                  showDialog(
+                                                    context: context,
+                                                    barrierDismissible: false,
+                                                    builder: (context) => Center(child: CircularProgressIndicator(
+                                                        color: Colors.white.withOpacity(0.4))),
+                                                  );
+                                                  Navigator.of(context).pop();
+                                                  initializeData();
+                                                }
+                                              },
+                                              checkColor: Colors.black,
+                                              fillColor: MaterialStateProperty.resolveWith(
+                                                      (states) => Colors.white.withOpacity(0.7)),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                       Text(
                                         overflow: TextOverflow.ellipsis,
@@ -194,7 +304,7 @@ class _ShowTodosScreenState extends State<ShowTodosScreen> {
                                       children: [
                                         AnimatedCrossFade(
                                             firstChild: SizedBox(height: 0),
-                                            secondChild: showMoreDetails(snapshot.data![index]["id"],userId!),
+                                            secondChild: showMoreDetails(snapshot.data![index]["id"].toString(),userId!, snapshot.data![index]["title"], snapshot.data![index]["priority"], snapshot.data![index]["description"]),
                                             crossFadeState: expandedItems.contains(index) ? CrossFadeState.showSecond:CrossFadeState.showFirst,
                                             duration: Duration(milliseconds: 300)
                                         ),
@@ -240,12 +350,21 @@ class _ShowTodosScreenState extends State<ShowTodosScreen> {
     }
   }
 
-  Widget showMoreDetails(int todoId,String userId) {
+  Widget showMoreDetails(String todoId, String userId, String title, String priority, String description) {
   return Container(
     child: Row(
       children: [
         GestureDetector(
-          onTap: (){},
+          onTap: (){
+            Map<String,dynamic> todoToEdit = {};
+            todoToEdit["userId"] = userId;
+            todoToEdit["title"] = title;
+            todoToEdit["description"] = description;
+            todoToEdit["priority"] = priority;
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => AddUpdateTodosScreen(todoId: todoId, todoToEdit: todoToEdit),)
+            );
+          },
           child: Container(
             height: 50,
             width: 150,

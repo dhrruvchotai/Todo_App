@@ -2,7 +2,7 @@ import 'dart:developer';
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:todo_app/frontend/pages/add_todos.dart';
+import 'package:todo_app/frontend/pages/add_update_todos.dart';
 import 'package:todo_app/frontend/pages/chat_wth_ai.dart';
 import 'package:todo_app/frontend/pages/show_todos.dart';
 
@@ -43,7 +43,7 @@ class _HomePageState extends State<HomePage> {
     final List<Widget> bottomBarPages = [
       //List all the pages for bottom bar
       ShowTodosScreen(),
-      AddTodosScreen(),
+      AddUpdateTodosScreen(),
       ChatWithAIScreen(),
     ];
     return Scaffold(

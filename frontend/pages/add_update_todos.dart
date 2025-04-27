@@ -4,16 +4,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_app/frontend/pages/home_page.dart';
 import '../api_services/todo_api_service.dart';
 
-class AddTodosScreen extends StatefulWidget {
-  const AddTodosScreen({super.key});
+class AddUpdateTodosScreen extends StatefulWidget {
+  //Details to update the todo
+  final String? todoId;
+  final Map<String,dynamic>? todoToEdit;
 
+  const AddUpdateTodosScreen({super.key, this.todoToEdit, this.todoId});
   @override
-  State<AddTodosScreen> createState() => _AddTodosScreenState();
+  State<AddUpdateTodosScreen> createState() => _AddUpdateTodosScreenState();
 }
 
-class _AddTodosScreenState extends State<AddTodosScreen> {
+class _AddUpdateTodosScreenState extends State<AddUpdateTodosScreen> {
 
-  Todo_APIService myAPIService = Todo_APIService();
+  Todo_APIService todoAPIService = Todo_APIService();
   TextEditingController Title = TextEditingController();
   TextEditingController Description = TextEditingController();
   String? selectedPriority = "Low";
@@ -24,12 +27,19 @@ class _AddTodosScreenState extends State<AddTodosScreen> {
   void initState() {
     super.initState();
     initializeData();
+
+    //check that if we want to add the data or edit the data
+    if(widget.todoToEdit != null){
+      Title.text = widget.todoToEdit!["title"] ?? "No Title";
+      Description.text = widget.todoToEdit!["description"] ?? "No description provided!";
+      selectedPriority = widget.todoToEdit!["priority"] ?? "Low";
+    }
   }
 
   Future<void> initializeData() async {
     await getUserData();
     setState(() {
-      futureTodos = myAPIService.fetchTodos(userId!);
+      futureTodos = todoAPIService.fetchTodos(userId!);
     });
   }
 
@@ -144,16 +154,25 @@ class _AddTodosScreenState extends State<AddTodosScreen> {
                     barrierDismissible: false,
                     builder: (context) => Center(child: CircularProgressIndicator(color: Colors.white.withOpacity(0.4),)),
                   );
-                  await myAPIService.addTodo(TodoData,userId!);
-                  await myAPIService.fetchTodos(userId!);
+
+                  //check if we want to edit the todo or update the todo
+                  if(widget.todoToEdit != null && widget.todoId != null){
+                    await todoAPIService.updateTodo(widget.todoId!,TodoData);
+                  }
+                  else{
+                    await todoAPIService.addTodo(TodoData,userId!);
+                  }
+                  //after adding updating todo fetch all
+                  await todoAPIService.fetchTodos(userId!);
+
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(
                       builder: (context) => HomePage(initialIndex: 0),
                     ),
-                        (route) => false, // for removing all previous routes
+                        (route) => false, // to remove all previous routes
                   );
                 },
-                child: Text("Create Task",style: TextStyle(color: Colors.black,fontSize: 18),),
+                child: Text( (widget.todoToEdit != null && widget.todoId != null) ? "Update Task" : "Create Task", style: TextStyle(color: Colors.black,fontSize: 18),),
                 style: ElevatedButton.styleFrom(minimumSize: Size(350, 50),shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(11))),),
             )
           ],
