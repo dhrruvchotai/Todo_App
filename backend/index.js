@@ -8,8 +8,7 @@ import cors from "cors";
 const app = express();
 dotenv.config();
 
-//allow temporary running on web
-app.use(cors({origin: "http://localhost:50885", credentials: true,}));
+app.use(cors({}));
 app.use(express.json());
 
 //todo routes
