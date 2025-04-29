@@ -8,7 +8,8 @@ import cors from "cors";
 const app = express();
 dotenv.config();
 
-app.use(cors());
+//allow temporary running on web
+app.use(cors({origin: "http://localhost:50885", credentials: true,}));
 app.use(express.json());
 
 //todo routes
@@ -19,6 +20,7 @@ app.use('/user/api/auth',auth_routes);
 
 //mongoDB url
 const mongoDBUrl = process.env.CONNECTION_STRING
+
 
 //connection with mongoDB
 mongoose.connect(mongoDBUrl).then(

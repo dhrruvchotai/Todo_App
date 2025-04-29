@@ -3,6 +3,7 @@ import Users from "../models/user_model.js";
 
 const router = express.Router();
 
+//route fro the sign up
 router.post("/signup", async (req,res) => {
 
     try{
@@ -16,12 +17,15 @@ router.post("/signup", async (req,res) => {
             res.status(400).json({message : "Password and Confirm Password must be same!"});
         }
 
+        //Check that user already exists or not
         const isUserExists = Users.findOne({email});
 
+        //If already exists return a message
         if(!isUserExists){
             return res.status(400).json({message : "User with this email already exists!"});
         }
 
+        //And if not existing one then create new
         const newUser = await Users.create({
             userName : userName,
             email : email,
@@ -42,6 +46,7 @@ router.post("/signup", async (req,res) => {
     }
 });
 
+//route for login
 router.post("/login", async (req,res) => {
     try{
         const {email, password} = req.body;
@@ -55,6 +60,7 @@ router.post("/login", async (req,res) => {
             res.status(400).json({message : "Invalid credentials!"});
         }
 
+        //Check matching existing password or not (match with the hashed password)
         const isMatchingPassword = await user.matchPassword(password);
 
         if(!isMatchingPassword){
